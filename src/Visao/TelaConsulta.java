@@ -56,6 +56,20 @@ public class TelaConsulta extends javax.swing.JFrame {
 
     }
 
+    public String SetarRegistro() {
+        int linhaSelecionada = TabelaConsulta.getSelectedRow();
+
+        if (linhaSelecionada != -1) {
+            DefaultTableModel tabela = (DefaultTableModel) TabelaConsulta.getModel();
+            String codigo = tabela.getValueAt(linhaSelecionada, 3).toString();
+            
+            System.out.println(codigo);
+            return codigo;
+        }
+
+        return null; // Retorna null se nenhum contato estiver selecionado
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -96,6 +110,11 @@ public class TelaConsulta extends javax.swing.JFrame {
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
+            }
+        });
+        TabelaConsulta.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                TabelaConsultaMouseClicked(evt);
             }
         });
         ScrollPanel.setViewportView(TabelaConsulta);
@@ -161,6 +180,10 @@ public class TelaConsulta extends javax.swing.JFrame {
     private void ConsultarButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ConsultarButtonMouseClicked
         ConsultarRegistros();
     }//GEN-LAST:event_ConsultarButtonMouseClicked
+
+    private void TabelaConsultaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TabelaConsultaMouseClicked
+        SetarRegistro();
+    }//GEN-LAST:event_TabelaConsultaMouseClicked
 
     /**
      * @param args the command line arguments

@@ -6,6 +6,8 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 public class TelaPrincipal extends javax.swing.JFrame {
+    
+    private String[] RegistroSelecionado;
 
     private CTRLConta contaCtrl;
 
@@ -65,7 +67,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         // Impedir o redimensionamento do JFrame
         TelaConsulta.setResizable(false);
-
+        
         TelaConsulta.setVisible(true);
     }
 
