@@ -16,11 +16,11 @@ public class DAOTransacao {
      * @param objtransacao O objeto TransacaoClass a ser inserido.
      * @return true se a inserção foi bem-sucedida, false caso contrário.
      */
-    public int inserir(TransacaoClass transacao) {
+    public int inserir(TransacaoClass transacao, Connection cnx) {
         int registrosAfetados = 0;
         int id = 0;
         try {
-            Connection conexao = FabricaConexao.getConexao();
+            //Connection conexao = FabricaConexao.getConexao();
 
             // Define a consulta SQL para inserir uma nova transação na tabela
             String sql = "INSERT INTO `carteira`.`transacao`"
@@ -32,7 +32,7 @@ public class DAOTransacao {
                     + "VALUES (?, ?, ?, ?);";
 
             // Cria um PreparedStatement com a opção de recuperar as chaves geradas
-            PreparedStatement st = conexao.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement st = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             // Define os valores dos parâmetros na consulta SQL
             st.setInt(1, transacao.getCodigoConta());
@@ -66,12 +66,12 @@ public class DAOTransacao {
 
     }
 
-    public TransacaoClass recuperar(String codigo) {
+    public TransacaoClass recuperar(String codigo, Connection cnx) {
         TransacaoClass transacao = null;
         try {
-            Connection conexao = FabricaConexao.getConexao();
+            //Connection conexao = FabricaConexao.getConexao();
             String sql = "SELECT * FROM `carteira`.`transacao` WHERE codigo = ?";
-            PreparedStatement st = conexao.prepareStatement(sql);
+            PreparedStatement st = cnx.prepareStatement(sql);
             st.setInt(1, Integer.parseInt(codigo));
             ResultSet resultado = st.executeQuery();
 
@@ -94,12 +94,12 @@ public class DAOTransacao {
         return transacao;
     }
 
-    public ArrayList<TransacaoClass> recuperarTodos() {
+    public ArrayList<TransacaoClass> recuperarTodos(Connection cnx) {
         ArrayList<TransacaoClass> transacoes = new ArrayList<>();
         try {
-            Connection conexao = FabricaConexao.getConexao();
+            //Connection conexao = FabricaConexao.getConexao();
             String sql = "SELECT * FROM `carteira`.`transacao`";
-            PreparedStatement st = conexao.prepareStatement(sql);
+            PreparedStatement st = cnx.prepareStatement(sql);
             ResultSet resultado = st.executeQuery();
 
             while (resultado.next()) {
@@ -121,13 +121,13 @@ public class DAOTransacao {
         return transacoes;
     }
 
-    public void editar(TransacaoClass transacao) {
+    public void editar(TransacaoClass transacao, Connection cnx) {
         try {
 
-            Connection conexao = FabricaConexao.getConexao();
+            //Connection conexao = FabricaConexao.getConexao();
             String sql = "UPDATE `carteira`.`transacao` SET codigotransacao=?, descricao=?, tipo=?, valor=?, data=? WHERE codigo = ?";
 
-            PreparedStatement st = conexao.prepareStatement(sql);
+            PreparedStatement st = cnx.prepareStatement(sql);
 
             // Define os valores dos parâmetros na instrução SQL
             st.setInt(1, transacao.getCodigoConta());
@@ -150,11 +150,11 @@ public class DAOTransacao {
         }
     }
 
-    public void excluir(int id) {
+    public void excluir(int id, Connection cnx) {
         try {
-            Connection conexao = FabricaConexao.getConexao();
+            //Connection conexao = FabricaConexao.getConexao();
             String sql = "DELETE FROM `carteira`.`transacao` WHERE codigo=?";
-            PreparedStatement st = conexao.prepareStatement(sql);
+            PreparedStatement st = cnx.prepareStatement(sql);
 
             st.setInt(1, id);
 

@@ -16,11 +16,11 @@ public class DAOConta {
      * @param objConta O objeto TransacaoClass a ser inserido.
      * @return true se a inserção foi bem-sucedida, false caso contrário.
      */
-    public int inserir(ContaClass objConta) {
+    public int inserir(ContaClass objConta, Connection cnx) {
         int registrosAfetados = 0;
         int id = 0;
         try {
-            Connection conexao = FabricaConexao.getConexao();
+            //Connection conexao = FabricaConexao.getConexao();
 
             // Define a consulta SQL para inserir uma nova transação na tabela
             String sql = "INSERT INTO `carteira`.`conta`"
@@ -31,7 +31,7 @@ public class DAOConta {
                     + "VALUES (?, ?, ?, ?);";
 
             // Cria um PreparedStatement com a opção de recuperar as chaves geradas
-            PreparedStatement st = conexao.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement st = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             // Define os valores dos parâmetros na consulta SQL
             st.setString(1, objConta.getNome());
@@ -49,27 +49,27 @@ public class DAOConta {
                 if (generatedKeys.next()) {
                     id = generatedKeys.getInt(1);
                     System.out.println("Último ID inserido: " + id);
-                    
+
                 }
             } else {
                 System.out.println("Nenhum registro foi inserido.");
             }
-            
+
             return (id);
-            
+
         } catch (SQLException ex) {
             // Captura exceções de SQL e lança uma exceção personalizada
             throw new Error("Erro ao inserir registro: ", ex);
         }
-        
+
     }
-    
-    public ContaClass recuperar(String codigo) {
+
+    public ContaClass recuperar(String codigo, Connection cnx) {
         ContaClass conta = null;
         try {
-            Connection conexao = FabricaConexao.getConexao();
+            //Connection conexao = FabricaConexao.getConexao();
             String sql = "SELECT * FROM `carteira`.`conta` WHERE codigo = ?";
-            PreparedStatement st = conexao.prepareStatement(sql);
+            PreparedStatement st = cnx.prepareStatement(sql);
             st.setInt(1, Integer.parseInt(codigo));
             ResultSet resultado = st.executeQuery();
 
@@ -81,25 +81,25 @@ public class DAOConta {
                 conta.setAgencia(resultado.getInt("agencia"));
                 conta.setNumero(resultado.getInt("numero"));
                 conta.setSaldo(resultado.getDouble("saldo"));
-                
+
             }
-            
+
         } catch (SQLException ex) {
             System.out.println("Erro ao recuperar: " + ex.getMessage());
         }
         return conta;
     }
-    
-    public ContaClass navegarProximo(String codigo) {
+
+    public ContaClass navegarProximo(String codigo, Connection cnx) {
         ContaClass conta = null;
         try {
-            Connection conexao = FabricaConexao.getConexao();
+            //Connection conexao = FabricaConexao.getConexao();
             String sql = "SELECT *\n"
                     + "FROM `carteira`.`conta`\n"
                     + "WHERE codigo > (SELECT codigo FROM `carteira`.`conta` WHERE codigo = ?)\n"
                     + "ORDER BY codigo ASC\n"
                     + "LIMIT 1;";
-            PreparedStatement st = conexao.prepareStatement(sql);
+            PreparedStatement st = cnx.prepareStatement(sql);
             st.setInt(1, Integer.parseInt(codigo));
             ResultSet resultado = st.executeQuery();
 
@@ -111,25 +111,25 @@ public class DAOConta {
                 conta.setAgencia(resultado.getInt("agencia"));
                 conta.setNumero(resultado.getInt("numero"));
                 conta.setSaldo(resultado.getDouble("saldo"));
-                
+
             }
-            
+
         } catch (SQLException ex) {
             System.out.println("Erro ao recuperar: " + ex.getMessage());
         }
         return conta;
     }
-    
-    public ContaClass navegarAnterior(String codigo) {
+
+    public ContaClass navegarAnterior(String codigo, Connection cnx) {
         ContaClass conta = null;
         try {
-            Connection conexao = FabricaConexao.getConexao();
+            //Connection conexao = FabricaConexao.getConexao();
             String sql = "SELECT *\n"
                     + "FROM `carteira`.`conta`\n"
                     + "WHERE codigo < (SELECT codigo FROM `carteira`.`conta` WHERE codigo = ?)\n"
                     + "ORDER BY codigo DESC\n"
                     + "LIMIT 1;";
-            PreparedStatement st = conexao.prepareStatement(sql);
+            PreparedStatement st = cnx.prepareStatement(sql);
             st.setInt(1, Integer.parseInt(codigo));
             ResultSet resultado = st.executeQuery();
 
@@ -141,26 +141,26 @@ public class DAOConta {
                 conta.setAgencia(resultado.getInt("agencia"));
                 conta.setNumero(resultado.getInt("numero"));
                 conta.setSaldo(resultado.getDouble("saldo"));
-                
+
             }
-            
+
         } catch (SQLException ex) {
             System.out.println("Erro ao recuperar: " + ex.getMessage());
         }
         return conta;
     }
-    
-    public ContaClass navegarUltimo() {
+
+    public ContaClass navegarUltimo(Connection cnx) {
         ContaClass conta = null;
         try {
-            Connection conexao = FabricaConexao.getConexao();
-            
+            //Connection conexao = FabricaConexao.getConexao();
+
             String sql = "SELECT *\n"
                     + "FROM `carteira`.`conta`\n"
                     + "ORDER BY codigo DESC\n"
                     + "LIMIT 1;";
-            
-            PreparedStatement st = conexao.prepareStatement(sql);
+
+            PreparedStatement st = cnx.prepareStatement(sql);
             ResultSet resultado = st.executeQuery();
 
             //Valida se algo foi encontardo
@@ -171,26 +171,26 @@ public class DAOConta {
                 conta.setAgencia(resultado.getInt("agencia"));
                 conta.setNumero(resultado.getInt("numero"));
                 conta.setSaldo(resultado.getDouble("saldo"));
-                
+
             }
-            
+
         } catch (SQLException ex) {
             System.out.println("Erro ao recuperar: " + ex.getMessage());
         }
         return conta;
     }
-    
-    public ContaClass navegarPrimeiro() {
+
+    public ContaClass navegarPrimeiro(Connection cnx) {
         ContaClass conta = null;
         try {
-            Connection conexao = FabricaConexao.getConexao();
-            
+            //Connection conexao = FabricaConexao.getConexao();
+
             String sql = "SELECT *\n"
                     + "FROM `carteira`.`conta`\n"
                     + "ORDER BY codigo ASC \n"
                     + "LIMIT 1;";
-            
-            PreparedStatement st = conexao.prepareStatement(sql);
+
+            PreparedStatement st = cnx.prepareStatement(sql);
             ResultSet resultado = st.executeQuery();
 
             //Valida se algo foi encontardo
@@ -201,47 +201,47 @@ public class DAOConta {
                 conta.setAgencia(resultado.getInt("agencia"));
                 conta.setNumero(resultado.getInt("numero"));
                 conta.setSaldo(resultado.getDouble("saldo"));
-                
+
             }
-            
+
         } catch (SQLException ex) {
             System.out.println("Erro ao recuperar: " + ex.getMessage());
         }
         return conta;
     }
-    
-    public ArrayList<ContaClass> recuperarTodos() {
+
+    public ArrayList<ContaClass> recuperarTodos(Connection cnx) {
         ArrayList<ContaClass> contas = new ArrayList<>();
         try {
-            Connection conexao = FabricaConexao.getConexao();
+            //Connection conexao = FabricaConexao.getConexao();
             String sql = "SELECT * FROM `carteira`.`conta`";
-            PreparedStatement st = conexao.prepareStatement(sql);
+            PreparedStatement st = cnx.prepareStatement(sql);
             ResultSet resultado = st.executeQuery();
-            
+
             while (resultado.next()) {
                 var conta = new ContaClass();
-                
+
                 conta.setCodigo(resultado.getInt("codigo"));
                 conta.setNome(resultado.getString("nome"));
                 conta.setAgencia(resultado.getInt("agencia"));
                 conta.setNumero(resultado.getInt("numero"));
                 conta.setSaldo(resultado.getDouble("saldo"));
-                
+
             }
-            
+
         } catch (SQLException ex) {
             System.out.println("Erro ao recuperar: " + ex.getMessage());
         }
         return contas;
     }
-    
-    public void editar(ContaClass conta) {
+
+    public void editar(ContaClass conta, Connection cnx) {
         try {
-            
-            Connection conexao = FabricaConexao.getConexao();
+
+            //onnection conexao = FabricaConexao.getConexao();
             String sql = "UPDATE `carteira`.`conta` SET nome=?, agencia=?, numero=?, saldo=? WHERE codigo = ?";
-            
-            PreparedStatement st = conexao.prepareStatement(sql);
+
+            PreparedStatement st = cnx.prepareStatement(sql);
 
             // Define os valores dos parâmetros na instrução SQL
             st.setString(1, conta.getNome());
@@ -252,46 +252,46 @@ public class DAOConta {
 
             // Executa a instrução SQL de atualização
             int linhasAfetadas = st.executeUpdate();
-            
+
             if (linhasAfetadas > 0) {
                 System.out.println("Registro atualizado com sucesso!");
             } else {
                 System.out.println("Nenhum registro foi atualizado.");
             }
-            
+
         } catch (SQLException ex) {
             System.out.println("Erro ao atualizar registro: " + ex.getMessage());
         }
     }
-    
-    public void excluir(int id) {
+
+    public void excluir(int id, Connection cnx) {
         try {
-            Connection conexao = FabricaConexao.getConexao();
+            //Connection conexao = FabricaConexao.getConexao();
             String sql = "DELETE FROM `carteira`.`conta` WHERE codigo=?";
-            PreparedStatement st = conexao.prepareStatement(sql);
-            
+            PreparedStatement st = cnx.prepareStatement(sql);
+
             st.setInt(1, id);
-            
+
             int linhasAfetadas = st.executeUpdate();
-            
+
             if (linhasAfetadas > 0) {
                 System.out.println("Registro excluído com sucesso!");
             } else {
                 System.out.println("Nenhum registro foi excluído.");
             }
-            
+
         } catch (SQLException ex) {
             throw new Error("Erro ao excluir registro: " + ex.getMessage());
-            
+
         }
     }
-    
-    public ArrayList<ContaClass> consultarPorNumero(String numero) {
+
+    public ArrayList<ContaClass> consultarPorNumero(String numero, Connection cnx) {
         ArrayList<ContaClass> contas = new ArrayList<>();
         try {
-            Connection conexao = FabricaConexao.getConexao();
+            //Connection conexao = FabricaConexao.getConexao();
             String sql = "SELECT * FROM carteira.conta WHERE CAST(numero AS CHAR) LIKE ?";
-            PreparedStatement st = conexao.prepareStatement(sql);
+            PreparedStatement st = cnx.prepareStatement(sql);
 
             // Usamos '%' para representar qualquer sequência de caracteres antes ou depois do número
             st.setString(1, "%" + numero + "%");
@@ -300,28 +300,28 @@ public class DAOConta {
             // Valida se algo foi encontrado
             while (resultado.next()) {
                 var conta = new ContaClass();
-                
+
                 conta.setCodigo(resultado.getInt("codigo"));
                 conta.setNome(resultado.getString("nome"));
                 conta.setAgencia(resultado.getInt("agencia"));
                 conta.setNumero(resultado.getInt("numero"));
                 conta.setSaldo(resultado.getDouble("saldo"));
-                
+
                 contas.add(conta);
             }
-            
+
         } catch (SQLException ex) {
             System.out.println("Erro ao recuperar: " + ex.getMessage());
         }
         return contas;
     }
-    
-    public ArrayList<ContaClass> consultarPorNome(String nome) {
+
+    public ArrayList<ContaClass> consultarPorNome(String nome, Connection cnx) {
         ArrayList<ContaClass> contas = new ArrayList<>();
         try {
-            Connection conexao = FabricaConexao.getConexao();
+            //Connection conexao = FabricaConexao.getConexao();
             String sql = "SELECT * FROM carteira.conta WHERE nome LIKE ?";
-            PreparedStatement st = conexao.prepareStatement(sql);
+            PreparedStatement st = cnx.prepareStatement(sql);
 
             // '%' para representar qualquer sequência de caracteres antes ou depois do nome
             st.setString(1, "%" + nome + "%");
@@ -330,21 +330,21 @@ public class DAOConta {
             // Valida se algo foi encontrado
             while (resultado.next()) {
                 var conta = new ContaClass();
-                
+
                 conta.setCodigo(resultado.getInt("codigo"));
                 conta.setNome(resultado.getString("nome"));
                 conta.setAgencia(resultado.getInt("agencia"));
                 conta.setNumero(resultado.getInt("numero"));
                 conta.setSaldo(resultado.getDouble("saldo"));
-                
+
                 contas.add(conta);
                 System.out.println("Indice: " + contas.size());
             }
-            
+
         } catch (SQLException ex) {
             System.out.println("Erro ao recuperar: " + ex.getMessage());
         }
         return contas;
     }
-    
+
 }
