@@ -33,7 +33,7 @@ public class CTRLTransacao {
                 if (Double.parseDouble(contaRemetente[4]) >= valor) {
 
                     contaRemetente[4] = (String.valueOf(Double.parseDouble(contaRemetente[4]) - valor));
-                    contaDestinatario[4] = (String.valueOf(Double.parseDouble(contaRemetente[4]) + valor));
+                    contaDestinatario[4] = (String.valueOf(Double.parseDouble(contaDestinatario[4]) + valor));
 
                     // Obtenha a data atual
                     Date dataAtual = new Date();

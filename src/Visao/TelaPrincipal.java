@@ -2,19 +2,17 @@ package Visao;
 
 import Controller.CTRLConta;
 import Controller.CTRLTransacao;
-import DAO.FabricaConexao;
-import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 public class TelaPrincipal extends javax.swing.JFrame {
-
+    
     private CTRLConta contaCtrl;
-
+    
     private CTRLTransacao transaCtrl;
-
+    
     private String RegistroAtual;
-
+    
     public TelaPrincipal() {
         initComponents();
 
@@ -26,9 +24,11 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         //Instancia o controlador
         contaCtrl = new CTRLConta();
-
+        
         transaCtrl = new CTRLTransacao();
-
+        
+       
+        
     }
 
     //--------------------------------------------
@@ -36,9 +36,50 @@ public class TelaPrincipal extends javax.swing.JFrame {
     // UTILITARIOS
     //
     //--------------------------------------------
+    /*
+    *Se verdadeiro, CAMPOS EDITAVEIS
+    *Se falso, CAMPOS NÃO EDITAVEIS
+     */
+    private void camposEditaveis(boolean valor) {
+        NomeInput.setEnabled(valor);
+        AgenciaInput.setEnabled(valor);
+        NumeroInput.setEnabled(valor);
+        SaldoInput.setEnabled(valor);
+        
+    }
+
+
+    /*
+    *Se verdadeiro, MODO EDIÇÃO
+    *Se falso, MODO LEITURA
+     */
+    private void modo(boolean valor) {
+        
+        camposEditaveis(valor);
+        //Desabilitar/Habilitar Botoes
+        NovoButton.setEnabled(!valor);
+        EditarButton.setEnabled(!valor);
+        ExcluirButton.setEnabled(!valor);
+        PesquisarButton.setEnabled(!valor);
+
+        //Define esses botoes com valores contrarios aos demaias
+        SalvarButton.setEnabled(valor);
+        CancelarButton.setEnabled(valor);
+        
+    }
+
+    //==>Limpa os campos
+    private void limparCampos() {
+        NomeInput.setText("");
+        AgenciaInput.setText("");
+        NumeroInput.setText("");
+        SaldoInput.setText("");
+        
+    }
+    
     public void AlimentarTabela(String[][] registros) {
         DefaultTableModel table = (DefaultTableModel) TabelaConsulta.getModel();
-
+        
         table.setRowCount(0);
         for (var i = 0; i < registros.length; i++) {
             table.addRow(new Object[]{
@@ -48,15 +89,15 @@ public class TelaPrincipal extends javax.swing.JFrame {
                 registros[i][3], // Numero
                 registros[i][4], // Saldo
             });
-
+            
         }
-
+        
     }
-
+    
     public void AlimentarTabelaDeTransacoes(String[][] registros) {
         try {
             DefaultTableModel table = (DefaultTableModel) TabelaHistorico.getModel();
-
+            
             table.setRowCount(0);
             for (var i = 0; i < registros.length; i++) {
                 table.addRow(new Object[]{
@@ -67,28 +108,28 @@ public class TelaPrincipal extends javax.swing.JFrame {
                     registros[i][4], // Data           
                     registros[i][5], // Valor
                 });
-
+                
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, e);
         }
-
+        
     }
-
+    
     public void SetarRegistro() {
         int linhaSelecionada = TabelaConsulta.getSelectedRow();
-
+        
         if (linhaSelecionada != -1) {
             DefaultTableModel tabela = (DefaultTableModel) TabelaConsulta.getModel();
             String codigo = tabela.getValueAt(linhaSelecionada, 0).toString();
-
+            
             RegistroAtual = codigo;
             DestinoInput.setText(codigo);
             Pesquisar();
             FrameConsulta.setVisible(false);
-
+            
         }
-
+        
     }
 
     //Limpa os campos e seta o foco no primeiro campo
@@ -109,15 +150,15 @@ public class TelaPrincipal extends javax.swing.JFrame {
         NumeroInput.setEnabled(valor);
         SaldoInput.setEnabled(valor);
     }
-
+    
     private void SetarConta(String[] registro) {
-
+        
         CodigoInput.setText(registro[0]);
         NomeInput.setText(registro[1]);
         AgenciaInput.setText(registro[2]);
         NumeroInput.setText(registro[3]);
         SaldoInput.setText(registro[4]);
-
+        
         RegistroAtual = CodigoInput.getText();
     }
 
@@ -136,11 +177,11 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         // Impedir o redimensionamento do JFrame
         FrameConsulta.setResizable(false);
-
+        
         FrameConsulta.setVisible(true);
-
+        
     }
-
+    
     private void AbrirConsultaTransferencia() {
         //Define ela ao centro
         FrameTransferencia.setLocationRelativeTo(null);
@@ -150,13 +191,13 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         // Impedir o redimensionamento do JFrame
         FrameTransferencia.setResizable(false);
-
+        
         FrameTransferencia.setVisible(true);
-
+        
         OrigemInput.setText(RegistroAtual);
-
+        
     }
-
+    
     private void AbrirPesquisaDeTransferencia() {
 
         //Define ela ao centro
@@ -167,7 +208,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         // Impedir o redimensionamento do JFrame
         FrameConsulta.setResizable(false);
-
+        
         FrameConsulta.setVisible(true);
     }
 
@@ -179,16 +220,16 @@ public class TelaPrincipal extends javax.swing.JFrame {
     //Função que delega se será uma edição ou inclusão
     private void Gravar() {
         String registroAtual = CodigoInput.getText();
-
+        
         if (registroAtual.equals("0")) {
             System.out.println("O codigo recebido é: " + registroAtual);
             GravarNovaConta();
         } else {
             GravarContaEditada(registroAtual);
         }
-
+        
         CamposEditaveis(false);
-
+        
     }
 
     //Grava uma nova conta
@@ -202,14 +243,14 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         //Salva no banco
         int codigo = contaCtrl.salvar(novaConta);
-
+        
         CodigoInput.setText(Integer.toString(codigo));
-
+        
     }
 
     //Atualiza uma conta existente
     private void GravarContaEditada(String codigo) {
-
+        
         String[] contaSelecionada = new String[5];
         contaSelecionada[0] = codigo;
         contaSelecionada[1] = NomeInput.getText();
@@ -219,7 +260,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         //Atualiza no banco de dados
         contaCtrl.atualizar(contaSelecionada);
-
+        
     }
 
     //Busca um registro pelo seu codigo
@@ -227,16 +268,16 @@ public class TelaPrincipal extends javax.swing.JFrame {
         if (RegistroAtual == "0") {
             return;
         }
-
+        
         var registro = contaCtrl.recuperar(RegistroAtual);
         if (registro == null) {
             JOptionPane.showMessageDialog(this, "Registro não encontardo!");
             return;
         }
         SetarConta(registro);
-
+        
     }
-
+    
     public void ConsultarRegistros() {
         String conteudo = ConteudoInput.getText();
         if (CamposSelect.getSelectedItem().equals("Nome")) {
@@ -244,20 +285,20 @@ public class TelaPrincipal extends javax.swing.JFrame {
         } else {
             ConsultarPorNumero(conteudo);
         }
-
+        
     }
-
+    
     public void ConsultarPorNumero(String conteudo) {
         String[][] registros = contaCtrl.consultarPorNumero(conteudo);
         AlimentarTabela(registros);
     }
-
+    
     public void ConsultarPorNome(String conteudo
     ) {
         String[][] registros = contaCtrl.consultarPorNome(conteudo);
         AlimentarTabela(registros);
     }
-
+    
     private void Editar() {
         if (RegistroAtual == "0") {
             JOptionPane.showMessageDialog(this, "Selecione um registro a ser editado!");
@@ -265,12 +306,12 @@ public class TelaPrincipal extends javax.swing.JFrame {
         }
         CamposEditaveis(true);
     }
-
+    
     private void Cancelar() {
         CamposEditaveis(false);
         Pesquisar();
     }
-
+    
     private void ExcluirConta() {
         if (RegistroAtual.equals("0")) {
             JOptionPane.showMessageDialog(this, "Selecione um registro a ser eliminado!", "Ação impossivel!", HEIGHT);
@@ -279,7 +320,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
             contaCtrl.deletar(Integer.parseInt(RegistroAtual));
             LimparCampos();
         }
-
+        
     }
 
     //--------------------------------------------
@@ -288,55 +329,55 @@ public class TelaPrincipal extends javax.swing.JFrame {
     //
     //--------------------------------------------
     private void NavegarUltimo() {
-
+        
         var registro = contaCtrl.navegarUltimo();
         if (registro == null) {
             JOptionPane.showMessageDialog(this, "Registro não encontardo!");
             return;
         }
         SetarConta(registro);
-
+        
     }
-
+    
     private void NavegarAnterior() {
         RegistroAtual = CodigoInput.getText();
-
+        
         if (RegistroAtual.equals("0")) {
             NavegarPrimeiro();
-
+            
             return;
         }
-
+        
         var registro = contaCtrl.navegarAnterior(RegistroAtual);
         if (registro == null) {
             JOptionPane.showMessageDialog(this, "Registro não encontardo!");
             return;
         }
         SetarConta(registro);
-
+        
     }
-
+    
     private void NavegarProximo() {
         RegistroAtual = CodigoInput.getText();
-
+        
         var registro = contaCtrl.navegarProximo(RegistroAtual);
         if (registro == null) {
             JOptionPane.showMessageDialog(this, "Registro não encontardo!");
             return;
         }
         SetarConta(registro);
-
+        
     }
-
+    
     private void NavegarPrimeiro() {
-
+        
         var registro = contaCtrl.navegarPrimeiro();
         if (registro == null) {
             JOptionPane.showMessageDialog(this, "Registro não encontardo!");
             return;
         }
         SetarConta(registro);
-
+        
     }
 
     //--------------------------------------------
@@ -348,23 +389,23 @@ public class TelaPrincipal extends javax.swing.JFrame {
         try {
             String[] remetente = new String[5];
             remetente = contaCtrl.recuperar(OrigemInput.getText());
-
+            
             String[] destino = new String[5];
             destino = contaCtrl.recuperar(DestinoInput.getText());
-
+            
             Double valor = Double.parseDouble(ValorInput.getText());
-
+            
             System.out.println("Origem : " + OrigemInput.getText() + " Destino: " + DestinoInput.getText() + " valor: " + valor);
-
+            
             var result = transaCtrl.Transferencia(remetente, destino, valor, "Descricao");
-
-            System.out.println("Resultado: " + result);
+            
+            FrameTransferencia.setVisible(false);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, e);
         }
-
+        
     }
-
+    
     private void RecuperarTodasAsTransacoes() {
         try {
             if (RegistroAtual.equals("0")) {
@@ -430,8 +471,8 @@ public class TelaPrincipal extends javax.swing.JFrame {
         SalvarButton = new javax.swing.JButton();
         CancelarButton = new javax.swing.JButton();
         ExcluirButton = new javax.swing.JButton();
-        PesqusiarButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        PesquisarButton = new javax.swing.JButton();
+        EditarButton = new javax.swing.JButton();
         TransacaoPanel = new javax.swing.JPanel();
         ScrollPanel = new javax.swing.JScrollPane();
         TabelaHistorico = new javax.swing.JTable();
@@ -747,7 +788,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         SaldoLabel.setText("Saldo:");
 
-        TransferirButton.setText("Trasnferir");
+        TransferirButton.setText("Transferir");
         TransferirButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 TransferirButtonMouseClicked(evt);
@@ -840,17 +881,17 @@ public class TelaPrincipal extends javax.swing.JFrame {
             }
         });
 
-        PesqusiarButton.setText("Pesquisar");
-        PesqusiarButton.addMouseListener(new java.awt.event.MouseAdapter() {
+        PesquisarButton.setText("Pesquisar");
+        PesquisarButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                PesqusiarButtonMouseClicked(evt);
+                PesquisarButtonMouseClicked(evt);
             }
         });
 
-        jButton1.setText("Editar");
-        jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
+        EditarButton.setText("Editar");
+        EditarButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jButton1MouseClicked(evt);
+                EditarButtonMouseClicked(evt);
             }
         });
 
@@ -862,7 +903,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
                 .addGap(15, 15, 15)
                 .addComponent(NovoButton)
                 .addGap(18, 18, 18)
-                .addComponent(jButton1)
+                .addComponent(EditarButton)
                 .addGap(18, 18, 18)
                 .addComponent(SalvarButton)
                 .addGap(18, 18, 18)
@@ -870,7 +911,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(ExcluirButton)
                 .addGap(18, 18, 18)
-                .addComponent(PesqusiarButton)
+                .addComponent(PesquisarButton)
                 .addContainerGap(19, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -882,8 +923,8 @@ public class TelaPrincipal extends javax.swing.JFrame {
                     .addComponent(SalvarButton)
                     .addComponent(CancelarButton)
                     .addComponent(ExcluirButton)
-                    .addComponent(PesqusiarButton)
-                    .addComponent(jButton1))
+                    .addComponent(PesquisarButton)
+                    .addComponent(EditarButton))
                 .addContainerGap(24, Short.MAX_VALUE))
         );
 
@@ -992,13 +1033,13 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
     private void CodigoInputFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_CodigoInputFocusLost
         RegistroAtual = CodigoInput.getText();
-
+        
         Pesquisar();
     }//GEN-LAST:event_CodigoInputFocusLost
 
-    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
+    private void EditarButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_EditarButtonMouseClicked
         Editar();
-    }//GEN-LAST:event_jButton1MouseClicked
+    }//GEN-LAST:event_EditarButtonMouseClicked
 
     private void CancelarButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CancelarButtonMouseClicked
         Cancelar();
@@ -1012,9 +1053,9 @@ public class TelaPrincipal extends javax.swing.JFrame {
         NavegarAnterior();
     }//GEN-LAST:event_RetornaRegistroButtonMouseClicked
 
-    private void PesqusiarButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_PesqusiarButtonMouseClicked
+    private void PesquisarButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_PesquisarButtonMouseClicked
         AbrirConsulta();
-    }//GEN-LAST:event_PesqusiarButtonMouseClicked
+    }//GEN-LAST:event_PesquisarButtonMouseClicked
 
     private void AvancaRegistroButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AvancaRegistroButtonMouseClicked
         NavegarProximo();
@@ -1054,7 +1095,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Selecione um registro de origem antes de tentar realizar uma transferência!");
             return;
         }
-
+        
         AbrirConsultaTransferencia();
     }//GEN-LAST:event_TransferirButtonMouseClicked
 
@@ -1084,21 +1125,21 @@ public class TelaPrincipal extends javax.swing.JFrame {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
-
+                    
                 }
             }
         } catch (ClassNotFoundException ex) {
             java.util.logging.Logger.getLogger(TelaPrincipal.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-
+            
         } catch (InstantiationException ex) {
             java.util.logging.Logger.getLogger(TelaPrincipal.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-
+            
         } catch (IllegalAccessException ex) {
             java.util.logging.Logger.getLogger(TelaPrincipal.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-
+            
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(TelaPrincipal.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
@@ -1129,6 +1170,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JTextField DestinoInput;
     private javax.swing.JLabel DestinoLabel;
     private javax.swing.JToggleButton DestinoPesquisaButton;
+    private javax.swing.JButton EditarButton;
     private javax.swing.JButton ExcluirButton;
     private javax.swing.JFrame FrameConsulta;
     private javax.swing.JFrame FrameTransferencia;
@@ -1142,7 +1184,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JTextField OrigemInput;
     private javax.swing.JLabel OrigemLabel;
     private javax.swing.JPanel Panel;
-    private javax.swing.JButton PesqusiarButton;
+    private javax.swing.JButton PesquisarButton;
     private javax.swing.JButton PrimeiroRegistroButton;
     private javax.swing.JButton RetornaRegistroButton;
     private javax.swing.JTextField SaldoInput;
@@ -1160,7 +1202,6 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JButton UltimoRegistroButton;
     private javax.swing.JTextField ValorInput;
     private javax.swing.JLabel ValorLabel;
-    private javax.swing.JButton jButton1;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 }
