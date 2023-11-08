@@ -1,17 +1,17 @@
 package Visao;
 
 import Controller.CTRLConta;
+import Controller.CTRLTransacao;
 import DAO.FabricaConexao;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 public class TelaPrincipal extends javax.swing.JFrame {
-    
-    private String[] RegistroSelecionado;
 
     private CTRLConta contaCtrl;
 
-    private String[][] listaContas;
+    private CTRLTransacao transaCtrl;
 
     private String RegistroAtual;
 
@@ -26,6 +26,69 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         //Instancia o controlador
         contaCtrl = new CTRLConta();
+
+        transaCtrl = new CTRLTransacao();
+
+    }
+
+    //--------------------------------------------
+    //
+    // UTILITARIOS
+    //
+    //--------------------------------------------
+    public void AlimentarTabela(String[][] registros) {
+        DefaultTableModel table = (DefaultTableModel) TabelaConsulta.getModel();
+
+        table.setRowCount(0);
+        for (var i = 0; i < registros.length; i++) {
+            table.addRow(new Object[]{
+                registros[i][0], // Codigo
+                registros[i][1], // Nome
+                registros[i][2], // Agencia
+                registros[i][3], // Numero
+                registros[i][4], // Saldo
+            });
+
+        }
+
+    }
+
+    public void AlimentarTabelaDeTransacoes(String[][] registros) {
+        try {
+            DefaultTableModel table = (DefaultTableModel) TabelaHistorico.getModel();
+
+            table.setRowCount(0);
+            for (var i = 0; i < registros.length; i++) {
+                table.addRow(new Object[]{
+                    registros[i][0], // Codigo
+                    //registros[i][x], //Codigo da conta
+                    registros[i][2], // Descricao
+                    registros[i][3], // Tipo 
+                    registros[i][4], // Data           
+                    registros[i][5], // Valor
+                });
+
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, e);
+        }
+
+    }
+
+    public void SetarRegistro() {
+        int linhaSelecionada = TabelaConsulta.getSelectedRow();
+
+        if (linhaSelecionada != -1) {
+            DefaultTableModel tabela = (DefaultTableModel) TabelaConsulta.getModel();
+            String codigo = tabela.getValueAt(linhaSelecionada, 0).toString();
+
+            RegistroAtual = codigo;
+            DestinoInput.setText(codigo);
+            Pesquisar();
+            FrameConsulta.setVisible(false);
+
+        }
+
     }
 
     //Limpa os campos e seta o foco no primeiro campo
@@ -48,29 +111,71 @@ public class TelaPrincipal extends javax.swing.JFrame {
     }
 
     private void SetarConta(String[] registro) {
+
         CodigoInput.setText(registro[0]);
         NomeInput.setText(registro[1]);
         AgenciaInput.setText(registro[2]);
         NumeroInput.setText(registro[3]);
         SaldoInput.setText(registro[4]);
+
+        RegistroAtual = CodigoInput.getText();
     }
 
+    //--------------------------------------------
+    //
+    // MANIPULAÇÃO DE FRAMES
+    //
+    //--------------------------------------------
     private void AbrirConsulta() {
-        //Instancia a tela
-        var TelaConsulta = new TelaConsulta();
 
         //Define ela ao centro
-        TelaConsulta.setLocationRelativeTo(null);
+        FrameConsulta.setLocationRelativeTo(null);
 
         //Define o titulo da janela
-        TelaConsulta.setTitle("Consulta de Contas");
+        FrameConsulta.setTitle("Consulta de Contas");
 
         // Impedir o redimensionamento do JFrame
-        TelaConsulta.setResizable(false);
-        
-        TelaConsulta.setVisible(true);
+        FrameConsulta.setResizable(false);
+
+        FrameConsulta.setVisible(true);
+
     }
 
+    private void AbrirConsultaTransferencia() {
+        //Define ela ao centro
+        FrameTransferencia.setLocationRelativeTo(null);
+
+        //Define o titulo da janela
+        FrameTransferencia.setTitle("Transferência");
+
+        // Impedir o redimensionamento do JFrame
+        FrameTransferencia.setResizable(false);
+
+        FrameTransferencia.setVisible(true);
+
+        OrigemInput.setText(RegistroAtual);
+
+    }
+
+    private void AbrirPesquisaDeTransferencia() {
+
+        //Define ela ao centro
+        FrameConsulta.setLocationRelativeTo(null);
+
+        //Define o titulo da janela
+        FrameConsulta.setTitle("Consulta de Contas");
+
+        // Impedir o redimensionamento do JFrame
+        FrameConsulta.setResizable(false);
+
+        FrameConsulta.setVisible(true);
+    }
+
+    //--------------------------------------------
+    //
+    // CRUD DE CONTAS
+    //
+    //--------------------------------------------
     //Função que delega se será uma edição ou inclusão
     private void Gravar() {
         String registroAtual = CodigoInput.getText();
@@ -132,6 +237,27 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
     }
 
+    public void ConsultarRegistros() {
+        String conteudo = ConteudoInput.getText();
+        if (CamposSelect.getSelectedItem().equals("Nome")) {
+            ConsultarPorNome(conteudo);
+        } else {
+            ConsultarPorNumero(conteudo);
+        }
+
+    }
+
+    public void ConsultarPorNumero(String conteudo) {
+        String[][] registros = contaCtrl.consultarPorNumero(conteudo);
+        AlimentarTabela(registros);
+    }
+
+    public void ConsultarPorNome(String conteudo
+    ) {
+        String[][] registros = contaCtrl.consultarPorNome(conteudo);
+        AlimentarTabela(registros);
+    }
+
     private void Editar() {
         if (RegistroAtual == "0") {
             JOptionPane.showMessageDialog(this, "Selecione um registro a ser editado!");
@@ -145,7 +271,6 @@ public class TelaPrincipal extends javax.swing.JFrame {
         Pesquisar();
     }
 
-    //Exclui o registro selecionado
     private void ExcluirConta() {
         if (RegistroAtual.equals("0")) {
             JOptionPane.showMessageDialog(this, "Selecione um registro a ser eliminado!", "Ação impossivel!", HEIGHT);
@@ -157,6 +282,11 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
     }
 
+    //--------------------------------------------
+    //
+    // NAVEGAÇÃO DE REGISTROS
+    //
+    //--------------------------------------------
     private void NavegarUltimo() {
 
         var registro = contaCtrl.navegarUltimo();
@@ -173,6 +303,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         if (RegistroAtual.equals("0")) {
             NavegarPrimeiro();
+
             return;
         }
 
@@ -208,10 +339,73 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
     }
 
+    //--------------------------------------------
+    //
+    // OPERAÇÕES DE TRANSFERÊNCIA
+    //
+    //--------------------------------------------
+    private void RealizarTransferencia() {
+        try {
+            String[] remetente = new String[5];
+            remetente = contaCtrl.recuperar(OrigemInput.getText());
+
+            String[] destino = new String[5];
+            destino = contaCtrl.recuperar(DestinoInput.getText());
+
+            Double valor = Double.parseDouble(ValorInput.getText());
+
+            System.out.println("Origem : " + OrigemInput.getText() + " Destino: " + DestinoInput.getText() + " valor: " + valor);
+
+            var result = transaCtrl.Transferencia(remetente, destino, valor, "Descricao");
+
+            System.out.println("Resultado: " + result);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, e);
+        }
+
+    }
+
+    private void RecuperarTodasAsTransacoes() {
+        try {
+            if (RegistroAtual.equals("0")) {
+                return;
+            }
+            System.out.println(RegistroAtual);
+            String[][] registros = transaCtrl.consultarPorCodigo(RegistroAtual);
+            AlimentarTabelaDeTransacoes(registros);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, e);
+        }
+    }
+
+    //--------------------------------------------
+    //
+    // EVENTOS PADRÃO DO SWING
+    //
+    //--------------------------------------------
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        FrameConsulta = new javax.swing.JFrame();
+        ScrollPanel1 = new javax.swing.JScrollPane();
+        TabelaConsulta = new javax.swing.JTable();
+        CamposSelect = new javax.swing.JComboBox<>();
+        ConteudoInput = new javax.swing.JTextField();
+        CampoLabel = new javax.swing.JLabel();
+        ConteudoLabel = new javax.swing.JLabel();
+        ConsultarButton = new javax.swing.JToggleButton();
+        FrameTransferencia = new javax.swing.JFrame();
+        TrasnferenciaPanel = new javax.swing.JPanel();
+        OrigemLabel = new javax.swing.JLabel();
+        OrigemInput = new javax.swing.JTextField();
+        DestinoLabel = new javax.swing.JLabel();
+        DestinoInput = new javax.swing.JTextField();
+        DestinoPesquisaButton = new javax.swing.JToggleButton();
+        Panel = new javax.swing.JPanel();
+        ValorLabel = new javax.swing.JLabel();
+        ValorInput = new javax.swing.JTextField();
+        TransferirValorButton = new javax.swing.JButton();
         TabbedPanel = new javax.swing.JTabbedPane();
         ContaPanel = new javax.swing.JPanel();
         Header = new javax.swing.JPanel();
@@ -230,6 +424,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
         NumeroInput = new javax.swing.JTextField();
         SaldoLabel = new javax.swing.JLabel();
         SaldoInput = new javax.swing.JTextField();
+        TransferirButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         NovoButton = new javax.swing.JButton();
         SalvarButton = new javax.swing.JButton();
@@ -240,6 +435,212 @@ public class TelaPrincipal extends javax.swing.JFrame {
         TransacaoPanel = new javax.swing.JPanel();
         ScrollPanel = new javax.swing.JScrollPane();
         TabelaHistorico = new javax.swing.JTable();
+
+        FrameConsulta.setMinimumSize(new java.awt.Dimension(440, 350));
+        FrameConsulta.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                FrameConsultaMouseClicked(evt);
+            }
+        });
+
+        TabelaConsulta.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Codigo", "Nome", "Agencia", "Numero", "Saldo"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        TabelaConsulta.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                TabelaConsultaMouseClicked(evt);
+            }
+        });
+        ScrollPanel1.setViewportView(TabelaConsulta);
+
+        CamposSelect.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nome", "Número" }));
+        CamposSelect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CamposSelectActionPerformed(evt);
+            }
+        });
+
+        CampoLabel.setText("Campo:");
+
+        ConteudoLabel.setText("Conteudo:");
+
+        ConsultarButton.setText("Consultar");
+        ConsultarButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ConsultarButtonMouseClicked(evt);
+            }
+        });
+
+        javax.swing.GroupLayout FrameConsultaLayout = new javax.swing.GroupLayout(FrameConsulta.getContentPane());
+        FrameConsulta.getContentPane().setLayout(FrameConsultaLayout);
+        FrameConsultaLayout.setHorizontalGroup(
+            FrameConsultaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, FrameConsultaLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(FrameConsultaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(CamposSelect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(CampoLabel))
+                .addGap(73, 73, 73)
+                .addGroup(FrameConsultaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(ConteudoLabel)
+                    .addComponent(ConteudoInput, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(72, 72, 72))
+            .addGroup(FrameConsultaLayout.createSequentialGroup()
+                .addGroup(FrameConsultaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(FrameConsultaLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(ScrollPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(FrameConsultaLayout.createSequentialGroup()
+                        .addGap(145, 145, 145)
+                        .addComponent(ConsultarButton)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        FrameConsultaLayout.setVerticalGroup(
+            FrameConsultaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, FrameConsultaLayout.createSequentialGroup()
+                .addGap(31, 31, 31)
+                .addGroup(FrameConsultaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(CampoLabel)
+                    .addComponent(ConteudoLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(FrameConsultaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ConteudoInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(CamposSelect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
+                .addComponent(ConsultarButton)
+                .addGap(18, 18, 18)
+                .addComponent(ScrollPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(19, 19, 19))
+        );
+
+        FrameTransferencia.setMinimumSize(new java.awt.Dimension(390, 300));
+
+        TrasnferenciaPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+
+        OrigemLabel.setText("Conta de Origem:");
+
+        OrigemInput.setEditable(false);
+
+        DestinoLabel.setText("Conta de Destino:");
+
+        DestinoPesquisaButton.setText("Pesquisar");
+        DestinoPesquisaButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                DestinoPesquisaButtonMouseClicked(evt);
+            }
+        });
+
+        javax.swing.GroupLayout TrasnferenciaPanelLayout = new javax.swing.GroupLayout(TrasnferenciaPanel);
+        TrasnferenciaPanel.setLayout(TrasnferenciaPanelLayout);
+        TrasnferenciaPanelLayout.setHorizontalGroup(
+            TrasnferenciaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(TrasnferenciaPanelLayout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addGroup(TrasnferenciaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(OrigemLabel)
+                    .addComponent(OrigemInput, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(96, 96, 96)
+                .addGroup(TrasnferenciaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(DestinoPesquisaButton, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(DestinoInput, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(DestinoLabel))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        TrasnferenciaPanelLayout.setVerticalGroup(
+            TrasnferenciaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(TrasnferenciaPanelLayout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addGroup(TrasnferenciaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(OrigemLabel)
+                    .addComponent(DestinoLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(TrasnferenciaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(OrigemInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(DestinoInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(DestinoPesquisaButton)
+                .addContainerGap(14, Short.MAX_VALUE))
+        );
+
+        Panel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+
+        ValorLabel.setText("Valor:");
+
+        TransferirValorButton.setText("Trasnferir");
+        TransferirValorButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                TransferirValorButtonMouseClicked(evt);
+            }
+        });
+
+        javax.swing.GroupLayout PanelLayout = new javax.swing.GroupLayout(Panel);
+        Panel.setLayout(PanelLayout);
+        PanelLayout.setHorizontalGroup(
+            PanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(PanelLayout.createSequentialGroup()
+                .addGroup(PanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(PanelLayout.createSequentialGroup()
+                        .addGap(123, 123, 123)
+                        .addGroup(PanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(TransferirValorButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(ValorInput)))
+                    .addGroup(PanelLayout.createSequentialGroup()
+                        .addGap(148, 148, 148)
+                        .addComponent(ValorLabel)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        PanelLayout.setVerticalGroup(
+            PanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(PanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(ValorLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(ValorInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(TransferirValorButton)
+                .addContainerGap(9, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout FrameTransferenciaLayout = new javax.swing.GroupLayout(FrameTransferencia.getContentPane());
+        FrameTransferencia.getContentPane().setLayout(FrameTransferenciaLayout);
+        FrameTransferenciaLayout.setHorizontalGroup(
+            FrameTransferenciaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(FrameTransferenciaLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(FrameTransferenciaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(TrasnferenciaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(8, Short.MAX_VALUE))
+        );
+        FrameTransferenciaLayout.setVerticalGroup(
+            FrameTransferenciaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(FrameTransferenciaLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(TrasnferenciaPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -346,6 +747,18 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         SaldoLabel.setText("Saldo:");
 
+        TransferirButton.setText("Trasnferir");
+        TransferirButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                TransferirButtonMouseClicked(evt);
+            }
+        });
+        TransferirButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TransferirButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout MainLayout = new javax.swing.GroupLayout(Main);
         Main.setLayout(MainLayout);
         MainLayout.setHorizontalGroup(
@@ -354,17 +767,20 @@ public class TelaPrincipal extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(MainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(MainLayout.createSequentialGroup()
-                        .addComponent(AgenciaLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(AgenciaInput, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(MainLayout.createSequentialGroup()
                         .addComponent(NomeLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(NomeInput, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(MainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(NumeroLabel, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(SaldoLabel, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addComponent(NomeInput, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(MainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(NumeroLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(SaldoLabel, javax.swing.GroupLayout.Alignment.TRAILING)))
+                    .addGroup(MainLayout.createSequentialGroup()
+                        .addComponent(AgenciaLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(AgenciaInput, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(37, 37, 37)
+                        .addComponent(TransferirButton)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(MainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(NumeroInput, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
@@ -380,12 +796,17 @@ public class TelaPrincipal extends javax.swing.JFrame {
                     .addComponent(NomeInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(NumeroLabel)
                     .addComponent(NumeroInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(34, 34, 34)
-                .addGroup(MainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(AgenciaLabel)
-                    .addComponent(AgenciaInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(SaldoLabel)
-                    .addComponent(SaldoInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(MainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(MainLayout.createSequentialGroup()
+                        .addGap(34, 34, 34)
+                        .addGroup(MainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(AgenciaLabel)
+                            .addComponent(AgenciaInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(SaldoLabel)
+                            .addComponent(SaldoInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(MainLayout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(TransferirButton)))
                 .addContainerGap(36, Short.MAX_VALUE))
         );
 
@@ -497,7 +918,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.Double.class, java.lang.String.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
                 false, false, false, false, false
@@ -604,12 +1025,50 @@ public class TelaPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_UltimoRegistroButtonMouseClicked
 
     private void CodigoInputInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_CodigoInputInputMethodTextChanged
-       
+
     }//GEN-LAST:event_CodigoInputInputMethodTextChanged
 
     private void TabbedPanelFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_TabbedPanelFocusGained
-        System.out.println("Mudou: " + RegistroAtual);
+        RecuperarTodasAsTransacoes();
     }//GEN-LAST:event_TabbedPanelFocusGained
+
+    private void TabelaConsultaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TabelaConsultaMouseClicked
+        SetarRegistro();
+
+    }//GEN-LAST:event_TabelaConsultaMouseClicked
+
+    private void ConsultarButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ConsultarButtonMouseClicked
+        ConsultarRegistros();
+    }//GEN-LAST:event_ConsultarButtonMouseClicked
+
+    private void FrameConsultaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_FrameConsultaMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_FrameConsultaMouseClicked
+
+    private void TransferirButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransferirButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_TransferirButtonActionPerformed
+
+    private void TransferirButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransferirButtonMouseClicked
+        if (RegistroAtual.equals("0")) {
+            JOptionPane.showMessageDialog(this, "Selecione um registro de origem antes de tentar realizar uma transferência!");
+            return;
+        }
+
+        AbrirConsultaTransferencia();
+    }//GEN-LAST:event_TransferirButtonMouseClicked
+
+    private void DestinoPesquisaButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DestinoPesquisaButtonMouseClicked
+        AbrirPesquisaDeTransferencia();
+    }//GEN-LAST:event_DestinoPesquisaButtonMouseClicked
+
+    private void CamposSelectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CamposSelectActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_CamposSelectActionPerformed
+
+    private void TransferirValorButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransferirValorButtonMouseClicked
+        RealizarTransferencia();
+    }//GEN-LAST:event_TransferirValorButtonMouseClicked
 
     /**
      * @param args the command line arguments
@@ -625,16 +1084,24 @@ public class TelaPrincipal extends javax.swing.JFrame {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
+
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(TelaPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TelaPrincipal.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(TelaPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TelaPrincipal.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(TelaPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TelaPrincipal.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(TelaPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TelaPrincipal.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
@@ -650,11 +1117,21 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JTextField AgenciaInput;
     private javax.swing.JLabel AgenciaLabel;
     private javax.swing.JButton AvancaRegistroButton;
+    private javax.swing.JLabel CampoLabel;
+    private javax.swing.JComboBox<String> CamposSelect;
     private javax.swing.JButton CancelarButton;
     private javax.swing.JTextField CodigoInput;
     private javax.swing.JLabel CodigoLabel;
+    private javax.swing.JToggleButton ConsultarButton;
     private javax.swing.JPanel ContaPanel;
+    private javax.swing.JTextField ConteudoInput;
+    private javax.swing.JLabel ConteudoLabel;
+    private javax.swing.JTextField DestinoInput;
+    private javax.swing.JLabel DestinoLabel;
+    private javax.swing.JToggleButton DestinoPesquisaButton;
     private javax.swing.JButton ExcluirButton;
+    private javax.swing.JFrame FrameConsulta;
+    private javax.swing.JFrame FrameTransferencia;
     private javax.swing.JPanel Header;
     private javax.swing.JPanel Main;
     private javax.swing.JTextField NomeInput;
@@ -662,6 +1139,9 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JButton NovoButton;
     private javax.swing.JTextField NumeroInput;
     private javax.swing.JLabel NumeroLabel;
+    private javax.swing.JTextField OrigemInput;
+    private javax.swing.JLabel OrigemLabel;
+    private javax.swing.JPanel Panel;
     private javax.swing.JButton PesqusiarButton;
     private javax.swing.JButton PrimeiroRegistroButton;
     private javax.swing.JButton RetornaRegistroButton;
@@ -669,10 +1149,17 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JLabel SaldoLabel;
     private javax.swing.JButton SalvarButton;
     private javax.swing.JScrollPane ScrollPanel;
+    private javax.swing.JScrollPane ScrollPanel1;
     private javax.swing.JTabbedPane TabbedPanel;
+    private javax.swing.JTable TabelaConsulta;
     private javax.swing.JTable TabelaHistorico;
     private javax.swing.JPanel TransacaoPanel;
+    private javax.swing.JButton TransferirButton;
+    private javax.swing.JButton TransferirValorButton;
+    private javax.swing.JPanel TrasnferenciaPanel;
     private javax.swing.JButton UltimoRegistroButton;
+    private javax.swing.JTextField ValorInput;
+    private javax.swing.JLabel ValorLabel;
     private javax.swing.JButton jButton1;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables

@@ -1,6 +1,7 @@
 package Controller;
 
 import DAO.DAOConta;
+import DAO.FabricaConexao;
 import Modelo.ContaClass;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
@@ -12,11 +13,16 @@ import javax.swing.JOptionPane;
 public class CTRLConta {
 
     public static int salvar(String[] dados) {
-        ContaClass conta = new ContaClass();
-        conta.arrayTo(dados);
+        try {
 
-        DAOConta dao = new DAOConta();
-        return dao.inserir(conta);
+            ContaClass conta = new ContaClass();
+            conta.arrayTo(dados);
+
+            DAOConta dao = new DAOConta();
+            return dao.inserir(conta);
+        } finally {
+        }
+
     }
 
     public static void atualizar(String[] dados) {

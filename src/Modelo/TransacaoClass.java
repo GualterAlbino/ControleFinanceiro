@@ -34,12 +34,12 @@ public class TransacaoClass {
     }
 
     public TransacaoClass arrayTo(String[] array) {
-        codigo = Integer.parseInt(array[0]);
-        codigoConta = Integer.parseInt(array[1]);
-        descricao = array[2];
-        tipo = array[3];
-        valor = Double.parseDouble(array[4]);
-        data = array[5];
+        //codigo = Integer.parseInt(array[0]);
+        codigoConta = Integer.parseInt(array[0]);
+        descricao = array[1];
+        tipo = array[2];
+        valor = Double.parseDouble(array[3]);
+        data = array[4];
 
         return this;
     }

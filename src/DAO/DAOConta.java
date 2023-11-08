@@ -10,13 +10,23 @@ import java.util.ArrayList;
 
 public class DAOConta {
 
+    private Connection cnx;
+
+    public DAOConta() {
+        cnx = FabricaConexao.getConexao();
+    }
+
+    public DAOConta(Connection pCnx) {
+        cnx = pCnx;
+    }
+
     /**
      * Insere um objeto TransacaoClass na tabela 'transacao' do banco de dados.
      *
      * @param objConta O objeto TransacaoClass a ser inserido.
      * @return true se a inserção foi bem-sucedida, false caso contrário.
      */
-    public int inserir(ContaClass objConta, Connection cnx) {
+    public int inserir(ContaClass objConta) {
         int registrosAfetados = 0;
         int id = 0;
         try {
@@ -64,7 +74,7 @@ public class DAOConta {
 
     }
 
-    public ContaClass recuperar(String codigo, Connection cnx) {
+    public ContaClass recuperar(String codigo) {
         ContaClass conta = null;
         try {
             //Connection conexao = FabricaConexao.getConexao();
@@ -90,7 +100,7 @@ public class DAOConta {
         return conta;
     }
 
-    public ContaClass navegarProximo(String codigo, Connection cnx) {
+    public ContaClass navegarProximo(String codigo) {
         ContaClass conta = null;
         try {
             //Connection conexao = FabricaConexao.getConexao();
@@ -120,7 +130,7 @@ public class DAOConta {
         return conta;
     }
 
-    public ContaClass navegarAnterior(String codigo, Connection cnx) {
+    public ContaClass navegarAnterior(String codigo) {
         ContaClass conta = null;
         try {
             //Connection conexao = FabricaConexao.getConexao();
@@ -150,7 +160,7 @@ public class DAOConta {
         return conta;
     }
 
-    public ContaClass navegarUltimo(Connection cnx) {
+    public ContaClass navegarUltimo() {
         ContaClass conta = null;
         try {
             //Connection conexao = FabricaConexao.getConexao();
@@ -180,7 +190,7 @@ public class DAOConta {
         return conta;
     }
 
-    public ContaClass navegarPrimeiro(Connection cnx) {
+    public ContaClass navegarPrimeiro() {
         ContaClass conta = null;
         try {
             //Connection conexao = FabricaConexao.getConexao();
@@ -210,7 +220,7 @@ public class DAOConta {
         return conta;
     }
 
-    public ArrayList<ContaClass> recuperarTodos(Connection cnx) {
+    public ArrayList<ContaClass> recuperarTodos() {
         ArrayList<ContaClass> contas = new ArrayList<>();
         try {
             //Connection conexao = FabricaConexao.getConexao();
@@ -235,7 +245,7 @@ public class DAOConta {
         return contas;
     }
 
-    public void editar(ContaClass conta, Connection cnx) {
+    public void editar(ContaClass conta) {
         try {
 
             //onnection conexao = FabricaConexao.getConexao();
@@ -264,7 +274,7 @@ public class DAOConta {
         }
     }
 
-    public void excluir(int id, Connection cnx) {
+    public void excluir(int id) {
         try {
             //Connection conexao = FabricaConexao.getConexao();
             String sql = "DELETE FROM `carteira`.`conta` WHERE codigo=?";
@@ -286,7 +296,7 @@ public class DAOConta {
         }
     }
 
-    public ArrayList<ContaClass> consultarPorNumero(String numero, Connection cnx) {
+    public ArrayList<ContaClass> consultarPorNumero(String numero) {
         ArrayList<ContaClass> contas = new ArrayList<>();
         try {
             //Connection conexao = FabricaConexao.getConexao();
@@ -316,7 +326,7 @@ public class DAOConta {
         return contas;
     }
 
-    public ArrayList<ContaClass> consultarPorNome(String nome, Connection cnx) {
+    public ArrayList<ContaClass> consultarPorNome(String nome) {
         ArrayList<ContaClass> contas = new ArrayList<>();
         try {
             //Connection conexao = FabricaConexao.getConexao();
@@ -338,7 +348,7 @@ public class DAOConta {
                 conta.setSaldo(resultado.getDouble("saldo"));
 
                 contas.add(conta);
-                System.out.println("Indice: " + contas.size());
+            
             }
 
         } catch (SQLException ex) {
